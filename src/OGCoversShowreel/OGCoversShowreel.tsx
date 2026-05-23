@@ -39,11 +39,9 @@ export const OGCoversShowreel: React.FC = () => {
           the new harmonograph-transition position (was 390–480, now 525–615),
           and the fadeout shifted +180 to align with the new end-card window.
           The music itself is NOT re-cut; we still play the same track from
-          frame 0. Its internal drop, which lands ~16.6s in (audio frame 499),
-          now hits during the final ~30 frames of the Clifford beat, where
-          the terminal pill is settled and ready for the wipe to harmonograph.
-          That gives the drop a clean sonic-to-visual handoff: drop fires
-          under Clifford's last beat, then the wipe whoosh takes over. */}
+          frame 0. Its internal drop lands on detected beat 35 (~16.77s, frame 503),
+          which hits during the final frames of the Clifford beat — terminal pill
+          settled, ready for the wipe to harmonograph. */}
       <Audio
         src={staticFile("music/yep-by-fgb.mp3")}
         volume={(f) => {
@@ -84,12 +82,12 @@ export const OGCoversShowreel: React.FC = () => {
         <HarmonographTransition />
       </Sequence>
 
-      {/* Beat 6 — Hero Fidenza (dark→light): 615–695 (2.7s) */}
+      {/* Beat 6 — Hero Fidenza (dark→light): ends on the rapid-fire downbeat */}
       <Sequence from={BEATS.heroFidenza.from} durationInFrames={BEATS.heroFidenza.to - BEATS.heroFidenza.from} premountFor={30}>
         <HeroFidenza />
       </Sequence>
 
-      {/* Beat 7 — Rapid-fire: 695–950 (8.5s, 17 covers × 15 frames) */}
+      {/* Beat 7 — Rapid-fire: librosa beat onsets, one cover per detected beat */}
       <Sequence from={BEATS.rapidFire.from} durationInFrames={BEATS.rapidFire.to - BEATS.rapidFire.from} premountFor={30}>
         <RapidFire />
       </Sequence>

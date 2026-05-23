@@ -33,13 +33,13 @@ export const COVERS: Cover[] = [
     theme: "dark",
   },
   {
-    slug: "harmonograph",
-    title: "Harmonograph",
-    subtitle: "Goold 1844",
-    num: "02 · Harmonograph",
-    heading: "A Victorian drawing machine, drawn in code",
-    png: staticFile("covers/showcase-harmonograph.png"),
-    theme: "dark",
+    slug: "hypsometric",
+    title: "Hypsometric Tint",
+    subtitle: "NOAA/GEBCO symbology",
+    num: "22 · Hypsometric tint",
+    heading: "Cartographic color by elevation",
+    png: staticFile("covers/showcase-hypsometric.png"),
+    theme: "light",
   },
   {
     slug: "lichtenberg",
@@ -51,12 +51,12 @@ export const COVERS: Cover[] = [
     theme: "dark",
   },
   {
-    slug: "sandpile",
-    title: "Sandpile",
-    subtitle: "Bak–Tang–Wiesenfeld 1987",
-    num: "04 · Abelian sandpile",
-    heading: "Self-organized criticality on a square lattice",
-    png: staticFile("covers/showcase-sandpile.png"),
+    slug: "gray-scott-maze",
+    title: "Gray-Scott Maze",
+    subtitle: "Pearson 1993",
+    num: "16 · Gray-Scott reaction-diffusion (maze)",
+    heading: "Turing chemistry in the labyrinth regime",
+    png: staticFile("covers/showcase-gray-scott-maze.png"),
     theme: "dark",
   },
   {
@@ -105,13 +105,13 @@ export const COVERS: Cover[] = [
     theme: "dark",
   },
   {
-    slug: "stippling",
-    title: "Stippling",
-    subtitle: "Bridson 2007",
-    num: "10 · Poisson-disk stippling",
-    heading: "The retinal-cone mosaic, in ink",
-    png: staticFile("covers/showcase-stippling.png"),
-    theme: "dark",
+    slug: "risograph",
+    title: "Risograph",
+    subtitle: "Riso Kagaku 1980s",
+    num: "18 · Risograph",
+    heading: "Duplicator drift as composition",
+    png: staticFile("covers/showcase-risograph.png"),
+    theme: "light",
   },
   {
     slug: "painterly-atmosphere",
@@ -123,12 +123,12 @@ export const COVERS: Cover[] = [
     theme: "dark",
   },
   {
-    slug: "flow-fidenza",
-    title: "Fidenza",
-    subtitle: "Hobbs 2021",
-    num: "12 · Flow field",
-    heading: "A vector field, walked with ink",
-    png: staticFile("covers/showcase-flow.png"),
+    slug: "harmonograph",
+    title: "Harmonograph",
+    subtitle: "Goold 1844",
+    num: "02 · Harmonograph",
+    heading: "A Victorian drawing machine, drawn in code",
+    png: staticFile("covers/showcase-harmonograph.png"),
     theme: "dark",
   },
   {
@@ -141,12 +141,12 @@ export const COVERS: Cover[] = [
     theme: "dark",
   },
   {
-    slug: "life-conway",
-    title: "Game of Life",
-    subtitle: "Conway 1970",
-    num: "14 · Conway's Game of Life",
-    heading: "A cellular automaton snapshot, not a portrait",
-    png: staticFile("covers/showcase-life.png"),
+    slug: "brians-brain",
+    title: "Brian's Brain",
+    subtitle: "Callahan 1996",
+    num: "23 · Brian's Brain",
+    heading: "Excitable media on a toroidal grid",
+    png: staticFile("covers/showcase-brians-brain.png"),
     theme: "dark",
   },
   {
@@ -160,21 +160,46 @@ export const COVERS: Cover[] = [
   },
 ];
 
+// Rapid-fire-only covers (not in the 4×4 grid)
+export const RAPID_FIRE_EXTRA: Cover[] = [
+  {
+    slug: "space-colonization",
+    title: "Colonization",
+    subtitle: "Runions et al. 2007",
+    num: "17 · Space colonization",
+    heading: "Trees grown by hunger for light",
+    png: staticFile("covers/showcase-space-colonization.png"),
+    theme: "dark",
+  },
+  {
+    slug: "woodcut-hatch",
+    title: "Woodcut",
+    subtitle: "Dürer woodcut technique",
+    num: "19 · Woodcut hatch",
+    heading: "Ink lines carved in the Dürer tradition",
+    png: staticFile("covers/showcase-woodcut-hatch.png"),
+    theme: "light",
+  },
+];
+
 // Covers NOT featured as heroes (used in rapid-fire beat 7)
-// Heroes: karman(4), clifford(8), flow/fidenza(11), stippling(9) via harmonograph transition
-// Rapid-fire: 17 covers × 13 frames = 221 frames (fills the 220-frame window)
+// Heroes: karman(4), clifford(8), flow/fidenza (beat 5 PNG), harmonograph transition
+// Rapid-fire: 21 covers on librosa-detected beats (see yep-by-fgb-beats.json)
 export const RAPID_FIRE_COVERS: Cover[] = [
   COVERS[0],  // Hoarfrost          — 01
-  COVERS[1],  // Harmonograph       — 02
+  COVERS[1],  // Hypsometric Tint   — 22 (light)
   COVERS[2],  // Lichtenberg        — 03
-  COVERS[3],  // Sandpile           — 04
+  COVERS[3],  // Gray-Scott Maze    — 16
   COVERS[5],  // Schlieren          — 06
   COVERS[6],  // Penrose            — 07 (light)
   COVERS[7],  // Lindenmayer light  — 08 (light)
+  COVERS[9],  // Risograph          — 18 (light)
   COVERS[10], // Atmosphere         — 11
+  COVERS[11], // Harmonograph       — 02
   COVERS[12], // Contour            — 13
-  COVERS[13], // Game of Life       — 14
+  COVERS[13], // Brian's Brain      — 23
   COVERS[14], // ASCII              — 15
+  ...RAPID_FIRE_EXTRA,
   // Unused variants — dark/light alternates not featured elsewhere
   {
     slug: "lsystem-dark",

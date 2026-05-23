@@ -1,16 +1,16 @@
 import React from "react";
 import { AbsoluteFill, Audio, Img, interpolate, Sequence, useCurrentFrame, staticFile } from "remotion";
-import { BG } from "../video-config";
+import { BG, rapidFireCutFrame } from "../video-config";
 import { RAPID_FIRE_COVERS } from "../lib/covers";
 import { CaptionBlock } from "../lib/CaptionBlock";
 
 /**
- * Beat 7 — Rapid-fire (frames 0–255, 8.5s).
+ * Beat 7 — Rapid-fire. Cuts on librosa-detected beats (see yep-by-fgb-beats.json).
  *
  * REWRITE NOTES
  * -------------
  * Previously every cover used the same punch-in motion (scale 1.04→1.0
- * over 5 frames, opacity 0.85→1.0). With 17 covers all moving identically,
+ * over 5 frames, opacity 0.85→1.0). With 21 covers all moving identically,
  * the eye stops registering the motion after ~3 cuts and what was meant
  * to be rapid-fire reads as a slow slideshow with hard cuts. The covers
  * are doing nothing — the cuts are doing all the work, and cuts alone
@@ -33,15 +33,18 @@ import { CaptionBlock } from "../lib/CaptionBlock";
  * so even the original treatment hits harder than before.
  */
 
-const FRAMES_PER_COVER = 15;
+function coverIndexAtFrame(frame: number): number {
+  for (let i = RAPID_FIRE_COVERS.length - 1; i >= 0; i--) {
+    if (frame >= rapidFireCutFrame(i)) return i;
+  }
+  return 0;
+}
 
 type MotionStyle = "punch" | "slide" | "drop" | "push";
 const MOTION_CYCLE: MotionStyle[] = ["punch", "slide", "drop", "push"];
 
 function getMotion(style: MotionStyle, localFrame: number) {
-  // All motions complete in 6 frames so they're done well before the
-  // 15-frame cover-duration window ends. The remaining 9 frames are
-  // pure hold.
+  // All motions complete in 6 frames — well before the next detected beat cut.
   const t = Math.min(1, localFrame / 6);
 
   switch (style) {
@@ -71,12 +74,9 @@ function getMotion(style: MotionStyle, localFrame: number) {
 
 export const RapidFire: React.FC = () => {
   const frame = useCurrentFrame();
-  const coverIndex = Math.min(
-    Math.floor(frame / FRAMES_PER_COVER),
-    RAPID_FIRE_COVERS.length - 1
-  );
+  const coverIndex = coverIndexAtFrame(frame);
   const cover = RAPID_FIRE_COVERS[coverIndex];
-  const localFrame = frame - coverIndex * FRAMES_PER_COVER;
+  const localFrame = frame - rapidFireCutFrame(coverIndex);
   const motion = getMotion(MOTION_CYCLE[coverIndex % MOTION_CYCLE.length], localFrame);
 
   const scrim =
@@ -88,7 +88,7 @@ export const RapidFire: React.FC = () => {
     <AbsoluteFill style={{ background: BG, overflow: "hidden" }}>
       {/* Tick on each cover swap — very low in the mix, like a film leader countdown */}
       {RAPID_FIRE_COVERS.map((_, i) => (
-        <Sequence key={`tick-${i}`} from={i * FRAMES_PER_COVER} durationInFrames={10}>
+        <Sequence key={`tick-${i}`} from={rapidFireCutFrame(i)} durationInFrames={10}>
           <Audio src={staticFile("sfx/tick.mp3")} volume={0.12} />
         </Sequence>
       ))}
