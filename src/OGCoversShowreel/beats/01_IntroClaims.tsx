@@ -169,7 +169,7 @@ export const IntroClaims: React.FC = () => {
         const fireAt = TYPE_START + Math.round(i * FRAMES_PER_CHAR);
         return (
           <Sequence key={i} from={fireAt} durationInFrames={20}>
-            <Audio src="https://remotion.media/mouse-click.wav" volume={0.2} />
+            <Audio src={staticFile("sfx/keyboard-click.wav")} volume={0.2} />
           </Sequence>
         );
       })}

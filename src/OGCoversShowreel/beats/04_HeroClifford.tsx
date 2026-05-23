@@ -128,7 +128,7 @@ export const HeroClifford: React.FC = () => {
       {/* Typing click sounds — fires on each character reveal across all phases */}
       {TYPING_FRAMES.map((f) => (
         <Sequence key={f} from={f} durationInFrames={25}>
-          <Audio src="https://remotion.media/mouse-click.wav" volume={0.25} />
+          <Audio src={staticFile("sfx/keyboard-click.wav")} volume={0.25} />
         </Sequence>
       ))}
 

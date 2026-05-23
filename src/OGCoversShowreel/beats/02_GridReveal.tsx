@@ -234,7 +234,7 @@ export const GridReveal: React.FC = () => {
       {/* Typing click sounds */}
       {Array.from({ length: TEXT.length }, (_, i) => (
         <Sequence key={i} from={TYPE_START + Math.round(i * FRAMES_PER_CHAR)} durationInFrames={20}>
-          <Audio src="https://remotion.media/mouse-click.wav" volume={0.18} />
+          <Audio src={staticFile("sfx/keyboard-click.wav")} volume={0.18} />
         </Sequence>
       ))}
     </AbsoluteFill>
