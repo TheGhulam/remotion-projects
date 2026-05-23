@@ -8,11 +8,19 @@ import {
 } from "remotion";
 import { BG } from "../video-config";
 import { CaptionBlock } from "../lib/CaptionBlock";
-import { CELL, COLS, computeGridAtFrame, ROWS, ageToRgb } from "../lib/gameOfLife";
+import {
+  CELL,
+  COLS,
+  computeGridAtFrame,
+  ROWS,
+  cellToRgba,
+  lifeReproCaption,
+} from "../lib/gameOfLife";
 
 export const HeroKarman: React.FC = () => {
   const frame = useCurrentFrame();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const repro = lifeReproCaption();
 
   useEffect(() => {
     const handle = delayRender("GoL canvas draw");
@@ -22,30 +30,19 @@ export const HeroKarman: React.FC = () => {
     if (!ctx) { continueRender(handle); return; }
 
     try {
-      const { alive, ages } = computeGridAtFrame(frame);
+      const { alive } = computeGridAtFrame(frame);
 
-      // Background
       ctx.fillStyle = BG;
       ctx.fillRect(0, 0, COLS * CELL, ROWS * CELL);
 
-      // Glow pass — larger rect, low opacity
       for (let i = 0; i < alive.length; i++) {
         if (!alive[i]) continue;
         const col = i % COLS;
         const row = (i / COLS) | 0;
-        const { r, g, b } = ageToRgb(ages[i]);
-        ctx.fillStyle = `rgba(${r},${g},${b},0.12)`;
-        ctx.fillRect(col * CELL - 3, row * CELL - 3, CELL + 6, CELL + 6);
-      }
-
-      // Cell pass — crisp 9×9 rects (1px gap for grid effect)
-      for (let i = 0; i < alive.length; i++) {
-        if (!alive[i]) continue;
-        const col = i % COLS;
-        const row = (i / COLS) | 0;
-        const { r, g, b } = ageToRgb(ages[i]);
-        ctx.fillStyle = `rgb(${r},${g},${b})`;
-        ctx.fillRect(col * CELL, row * CELL, CELL - 1, CELL - 1);
+        const { r, g, b, a } = cellToRgba(col, row);
+        if (a <= 0) continue;
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.fillRect(col * CELL + 1, row * CELL + 1, CELL - 2, CELL - 2);
       }
     } finally {
       continueRender(handle);
@@ -82,7 +79,8 @@ export const HeroKarman: React.FC = () => {
       <CaptionBlock
         title="Game of Life"
         subtitle="Conway, 1970"
-        seed="conway"
+        seed={repro.seed}
+        params={repro.params}
         theme="dark"
         anchor="bottom-left"
         opacity={captionOpacity * exitOpacity}

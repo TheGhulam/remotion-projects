@@ -35,6 +35,8 @@ export interface CaptionBlockProps {
   title: string;
   subtitle?: string;
   seed: string;
+  /** Optional second mono line — e.g. gen/density/rules for procedural covers. */
+  params?: string;
   opacity?: number;
   theme?: Theme;
   anchor?: Anchor;
@@ -70,6 +72,7 @@ export const CaptionBlock: React.FC<CaptionBlockProps> = ({
   title,
   subtitle,
   seed,
+  params,
   opacity = 1,
   theme = "dark",
   anchor = "bottom-left",
@@ -135,6 +138,20 @@ export const CaptionBlock: React.FC<CaptionBlockProps> = ({
       >
         seed: {seed}
       </div>
+      {params && (
+        <div
+          style={{
+            fontFamily: jetBrainsMono,
+            fontSize: seedSize,
+            color: ink.seed,
+            marginTop: 6,
+            textShadow: shadow.seed,
+            letterSpacing: "0.04em",
+          }}
+        >
+          {params}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,28 +1,62 @@
 // src/OGCoversShowreel/lib/gameOfLife.ts
+//
+// Matches better-covers/cover-pipeline/styles/life.ts and
+// PhenomenaCoversConsolidated.tsx renderLife — seed from "life-conway",
+// 32% density, 22 generations, radial amber→slate coloring, bottom fade.
 
-export const COLS = 192;   // 192 × 10px = 1920
-export const ROWS = 108;   // 108 × 10px = 1080
-export const CELL = 10;    // px per cell
+export const COLS = 192; // 192 × 10px = 1920
+export const ROWS = 108; // 108 × 10px = 1080
+export const CELL = 10;
+export const CANVAS_H = ROWS * CELL;
+export const LIFE_GENERATIONS = 22;
+export const LIFE_INITIAL_DENSITY = 0.32;
+export const LIFE_FADE_START = 0.67;
+export const LIFE_FADE_END = 0.95;
+
 const SIZE = COLS * ROWS;
 
-function lcg(seed: number): () => number {
-  let s = seed | 0;
-  return () => {
-    s = (Math.imul(1664525, s) + 1013904223) | 0;
-    return (s >>> 0) / 0xffffffff;
+function hashStr(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function mulberry32(a: number): () => number {
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
-export function createGrid(seed = 42): Uint8Array {
-  const rand = lcg(seed);
+/** Slug passed to hashStr — matches better-covers PhenomenaCoversConsolidated seed field. */
+export const LIFE_SEED_SLUG = "life-conway";
+export const LIFE_RULESET = "B3/S23";
+
+/** Caption lines derived from the same constants that drive the simulation. */
+export function lifeReproCaption(): { seed: string; params: string } {
+  return {
+    seed: LIFE_SEED_SLUG,
+    params: `gen ${LIFE_GENERATIONS} · density ${LIFE_INITIAL_DENSITY} · ${LIFE_RULESET} · wrap · ${CELL}px`,
+  };
+}
+
+export function createGrid(): Uint8Array {
+  const rand = mulberry32(hashStr(LIFE_SEED_SLUG));
   const alive = new Uint8Array(SIZE);
   for (let i = 0; i < SIZE; i++) {
-    alive[i] = rand() < 0.35 ? 1 : 0;
+    alive[i] = rand() < LIFE_INITIAL_DENSITY ? 1 : 0;
   }
   return alive;
 }
 
-export function stepGrid(alive: Uint8Array, ages: Uint8Array): void {
+export function stepGrid(alive: Uint8Array): void {
   const next = new Uint8Array(SIZE);
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
@@ -34,64 +68,58 @@ export function stepGrid(alive: Uint8Array, ages: Uint8Array): void {
         }
       }
       const i = r * COLS + c;
-      next[i] = (alive[i] ? n === 2 || n === 3 : n === 3) ? 1 : 0;
+      next[i] = alive[i] ? (n === 2 || n === 3 ? 1 : 0) : n === 3 ? 1 : 0;
     }
   }
-  for (let i = 0; i < SIZE; i++) {
-    if (next[i]) {
-      ages[i] = alive[i] ? Math.min(ages[i] + 1, 255) : 1;
-    } else {
-      ages[i] = 0;
-    }
-    alive[i] = next[i];
-  }
+  alive.set(next);
 }
 
 let _cacheFrame = -1;
 let _cacheAlive: Uint8Array | null = null;
-let _cacheAges: Uint8Array | null = null;
 
 /**
- * Returns the GoL grid state at the given frame, computed deterministically from seed 42.
- * The returned arrays are the live module-level cache — do NOT mutate them.
+ * Returns the GoL grid at the given frame, capped at LIFE_GENERATIONS so the
+ * simulation settles on the same snapshot as showcase-life.png.
  */
-export function computeGridAtFrame(frame: number): { alive: Uint8Array; ages: Uint8Array } {
-  const f = Math.max(0, frame);
+export function computeGridAtFrame(frame: number): { alive: Uint8Array } {
+  const f = Math.min(Math.max(0, frame), LIFE_GENERATIONS);
   if (_cacheFrame < 0 || f < _cacheFrame) {
-    // Recompute from seed (backward scrub or cold start)
-    _cacheAlive = createGrid(42);
-    _cacheAges = new Uint8Array(SIZE);
+    _cacheAlive = createGrid();
     _cacheFrame = 0;
   }
   for (let i = _cacheFrame; i < f; i++) {
-    stepGrid(_cacheAlive!, _cacheAges!);
+    stepGrid(_cacheAlive!);
   }
   _cacheFrame = f;
-  return { alive: _cacheAlive!, ages: _cacheAges! };
+  return { alive: _cacheAlive! };
 }
 
-const COLOR_STOPS: Array<{ at: number; r: number; g: number; b: number }> = [
-  { at: 1,  r: 0xc8, g: 0x88, b: 0x4a },
-  { at: 5,  r: 0xe0, g: 0xa0, b: 0x60 },
-  { at: 12, r: 0x60, g: 0xc8, b: 0xc0 },
-  { at: 25, r: 0x0a, g: 0x30, b: 0x70 },
-];
+function legibilityAlpha(yNorm: number): number {
+  if (yNorm <= LIFE_FADE_START) return 1;
+  if (yNorm >= LIFE_FADE_END) return 0;
+  const t = (yNorm - LIFE_FADE_START) / (LIFE_FADE_END - LIFE_FADE_START);
+  return 1 - t * t * (3 - 2 * t);
+}
 
-export function ageToRgb(age: number): { r: number; g: number; b: number } {
-  if (age <= COLOR_STOPS[0].at) return { ...COLOR_STOPS[0] };
-  const last = COLOR_STOPS[COLOR_STOPS.length - 1];
-  if (age >= last.at) return { ...last };
-  for (let i = 0; i < COLOR_STOPS.length - 1; i++) {
-    const lo = COLOR_STOPS[i];
-    const hi = COLOR_STOPS[i + 1];
-    if (age >= lo.at && age <= hi.at) {
-      const t = (age - lo.at) / (hi.at - lo.at);
-      return {
-        r: Math.round(lo.r + t * (hi.r - lo.r)),
-        g: Math.round(lo.g + t * (hi.g - lo.g)),
-        b: Math.round(lo.b + t * (hi.b - lo.b)),
-      };
-    }
-  }
-  return last;
+/** Warm amber at center, cool slate at edges — matches better-covers life.ts */
+export function cellToRgba(col: number, row: number): { r: number; g: number; b: number; a: number } {
+  const centerR = 200;
+  const centerG = 136;
+  const centerB = 74;
+  const edgeR = 60;
+  const edgeG = 78;
+  const edgeB = 95;
+
+  const dx = (col - COLS / 2) / COLS;
+  const dy = (row - ROWS / 2) / ROWS;
+  const t = Math.min(1, Math.sqrt(dx * dx + dy * dy) * 1.6);
+  const yPx = row * CELL + CELL / 2;
+  const fade = legibilityAlpha(yPx / CANVAS_H);
+
+  return {
+    r: Math.round(centerR + (edgeR - centerR) * t),
+    g: Math.round(centerG + (edgeG - centerG) * t),
+    b: Math.round(centerB + (edgeB - centerB) * t),
+    a: fade,
+  };
 }
