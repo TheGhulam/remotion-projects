@@ -53,7 +53,9 @@ export const HeroKarman: React.FC = () => {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const exitOpacity = interpolate(frame, [120, 135], [1, 0], {
+
+  // Shifted -10 frames to account for the new sequence length (125 total frames)
+  const exitOpacity = interpolate(frame, [110, 125], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });

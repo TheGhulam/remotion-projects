@@ -1,221 +1,272 @@
+// OGCoversShowreel/beats/01_IntroClaims.tsx
+
 import React from "react";
 import {
   AbsoluteFill,
   Audio,
-  Easing,
   Img,
   Sequence,
   interpolate,
+  spring,
   staticFile,
   useCurrentFrame,
+  useVideoConfig,
 } from "remotion";
-import { ACCENT, BG, FG } from "../video-config";
-import { jetBrainsMono } from "../fonts";
+import { ACCENT, BG, DIM, FG } from "../video-config";
+import { jetBrainsMono, sourceSerif4, geist } from "../fonts";
 
 /**
- * Beat 1 — Terminal cold-open hook (frames 0–105, 3.5s).
+ * Beat 1 — Terminal cold-open hook (frames 0–135, 4.5s).
  *
- * REWRITE NOTES
+ * REWRITE NOTES (Mobile/X Optimized & Extended Hold)
  * -------------
- * Previous version held a black screen with a blinking caret until frame 10,
- * typed the command from 10–55, held for 13 frames, then "revealed" the cover
- * via channel-drift from 68–95. Watching the rendered video at frame 75 (the
- * supposed reveal moment), the cover was still three faint streaks against
- * black — there was nothing to reveal *to*. The hook resolved into a near-
- * empty frame.
- *
- * Two structural fixes:
- *
- *   (1) The cover paints in BEHIND the typing, not after it. From frame 0
- *       it's at ~25% opacity (visible enough to anchor the eye, dim enough
- *       not to compete with the typing). It ramps to 100% as the typing
- *       completes. The viewer's first impression is "image + command" as
- *       a pair, not "black screen + caret."
- *
- *   (2) Cover swapped from Kármán to Hoarfrost. The Kármán wake is
- *       gorgeous as a still but reads as "blank navy" at video speed
- *       because it has no central subject. Hoarfrost has dendrites along
- *       the top edge that create instant visual recognition — frost,
- *       lightning, branching. It's the strongest "what is this?" hook
- *       cover in the set.
- *
- * Tertiary changes:
- *   - Killed the 10-frame caret pre-roll. The video opens on a half-
- *     materialized cover, command already starting. Three swipes of pre-
- *     roll silence on X = scrolled past.
- *   - Typing rate ~3 frames/char (was ~2). Slower = more deliberate,
- *     and the cover behind needs the time to paint up.
- *   - The slug swap to "hoarfrost" matches the cover shown. Beat 1's
- *     slug→cover pairing was previously dishonest (typed "karman", but
- *     a viewer who watched closely could see the reveal didn't fit the
- *     command). Now it's literal.
- *
- * The terminal pill still slides down at the end to land in the
- * bottom-anchored spot beat 4 uses, preserving the visual rhyme.
+ * Corner chrome removed to reduce noise. Center stage card scaled up massively
+ * (from 740px to 1200px) with proportionally larger typography.
+ * Duration extended from 105 to 135 frames. Internal animations sped up slightly
+ * so the final card is visible for over 2.6 seconds (was ~1.3s), making it
+ * easy to read on a fast-scrolling mobile timeline.
  */
 
-const COMMAND = `better-covers "karman"`;
-const TYPE_START = 4;
-const TYPE_END = 70; // ~3 frames/char over 22 chars
-const FRAMES_PER_CHAR = (TYPE_END - TYPE_START) / COMMAND.length;
+const TYPE_START = 8;
+const COMMAND = `$ npx better-covers generate`;
+const FRAMES_PER_CHAR = 1.1; // Sped up from 1.4
 
-// Cover paints up across the WHOLE typing window — the image is the
-// background the command types on top of, not a payoff at the end.
-const COVER_BASE_OPACITY = 0.28;
-const COVER_FADE_TO_FULL_START = 60;
-const COVER_FADE_TO_FULL_END = 92;
+// Timings for the "terminal logs" popping in before the final render snap
+const LOG_1_FRAME = 40; // was 48
+const LOG_2_FRAME = 46; // was 55
+const SNAP_FRAME = 55;  // was 65
 
-// Pill slide: from screen center to bottom-anchored resting position
-// (matches beat 4 chrome). Happens once typing is done.
-const SLIDE_START = 78;
-const SLIDE_END = 100;
-
-const PILL_FONT_SIZE = 36;
-
-function typedSlice(frame: number): string {
-  if (frame < TYPE_START) return "";
-  const n = Math.min(
-    COMMAND.length,
-    Math.floor((frame - TYPE_START) / FRAMES_PER_CHAR),
-  );
-  return COMMAND.slice(0, n);
-}
-
-function caretBlink(frame: number): boolean {
-  return Math.floor(frame / 12) % 2 === 0;
+function typedSlice(frame: number, text: string, startFrame: number, fpc: number): string {
+  if (frame < startFrame) return "";
+  const n = Math.min(text.length, Math.floor((frame - startFrame) / fpc));
+  return text.slice(0, n);
 }
 
 export const IntroClaims: React.FC = () => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
-  // === Cover opacity ramp ===
-  // Phase 1 (0–60):   cover at low base opacity, visible but recessive
-  // Phase 2 (60–92):  ramps up to full as the slug completes typing
-  // Phase 3 (92+):    fully present, command sits on top of finished art
-  const coverOpacity = interpolate(
+  const typedCmd = typedSlice(frame, COMMAND, TYPE_START, FRAMES_PER_CHAR);
+  const isTyping = frame >= TYPE_START && typedCmd.length < COMMAND.length;
+  const showCaret = Math.floor(frame / 10) % 2 === 0;
+
+  const hasSnapped = frame >= SNAP_FRAME;
+
+  // Blog Card geometry - Scaled up for mobile visibility
+  const CARD_W = 1200;
+  const CARD_IMG_H = Math.round(CARD_W / (1200 / 630)); // 630
+  const CARD_TEXT_H = 260; // Increased room for larger text
+  const CARD_H = CARD_IMG_H + CARD_TEXT_H; // 890
+
+  // Animations & Micro-interactions
+
+  // 1. Initial entrance of the wireframe
+  const entranceScale = spring({
     frame,
-    [0, 8, COVER_FADE_TO_FULL_START, COVER_FADE_TO_FULL_END],
-    [0, COVER_BASE_OPACITY, COVER_BASE_OPACITY, 1],
-    {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-      easing: Easing.out(Easing.cubic),
-    },
-  );
-
-  // Subtle Ken Burns on the cover — 1.05 → 1.0 over the beat so the
-  // backdrop has motion even before it brightens.
-  const coverScale = interpolate(frame, [0, 105], [1.05, 1.0], {
-    extrapolateRight: "clamp",
-    easing: Easing.out(Easing.quad),
+    fps,
+    config: { damping: 16, stiffness: 100 },
   });
 
-  // === Pill position ===
-  // Center until typing finishes, then slides down to the bottom-anchored
-  // spot the rest of the reel uses.
-  const pillSlide = interpolate(frame, [SLIDE_START, SLIDE_END], [0, 380], {
+  // 2. Terminal logs slide-up springs
+  const log1Spring = spring({
+    frame: frame - LOG_1_FRAME,
+    fps,
+    config: { damping: 14, stiffness: 120 },
+  });
+  const log2Spring = spring({
+    frame: frame - LOG_2_FRAME,
+    fps,
+    config: { damping: 14, stiffness: 120 },
+  });
+
+  // 3. Impact spring when the cover generation finishes
+  const cardScaleSnap = spring({
+    frame: frame - SNAP_FRAME,
+    fps,
+    config: { damping: 14, stiffness: 140 },
+  });
+
+  // 4. Staggered text reveal for the final blog details
+  const postDomainSpring = spring({
+    frame: frame - SNAP_FRAME,
+    fps,
+    config: { damping: 14, stiffness: 110 },
+  });
+  const postTitleSpring = spring({
+    frame: frame - (SNAP_FRAME + 4),
+    fps,
+    config: { damping: 14, stiffness: 110 },
+  });
+
+  // 5. Flash effect at snap
+  const flashOpacity = hasSnapped
+    ? interpolate(frame - SNAP_FRAME, [0, 10], [0.6, 0], { extrapolateRight: "clamp" })
+    : 0;
+
+  // Compose the scales
+  const baseScale = interpolate(entranceScale, [0, 1], [0.92, 1]);
+  const scaleTransform = hasSnapped ? interpolate(cardScaleSnap, [0, 1], [0.95, 1]) : baseScale;
+  const cardOpacity = interpolate(entranceScale, [0, 0.5], [0, 1]);
+
+  // Exit fade for the transition into Beat 2 (Grid Reveal)
+  // Adjusted for extended sequence duration
+  const exitOpacity = interpolate(frame, [125, 135], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
-    easing: Easing.inOut(Easing.cubic),
   });
 
-  // === Vignette ===
-  // Darkens the corners once the cover is at full opacity so the pill
-  // stays legible during the final hold.
-  const vignetteOpacity = interpolate(
-    frame,
-    [COVER_FADE_TO_FULL_START, COVER_FADE_TO_FULL_END],
-    [0, 0.7],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
-
-  const typed = typedSlice(frame);
-  const showCaret = caretBlink(frame);
-  const typingActive = frame >= TYPE_START && typed.length < COMMAND.length;
-  const typedHighlight = typed.startsWith("better-covers ");
-
   return (
-    <AbsoluteFill style={{ background: BG }}>
-      {/* === Cover backdrop === */}
-      <AbsoluteFill
-        style={{
-          opacity: coverOpacity,
-          transform: `scale(${coverScale})`,
-        }}
-      >
-        <Img
-          src={staticFile("covers/showcase-karman.png")}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            display: "block",
-          }}
-        />
-      </AbsoluteFill>
+    <AbsoluteFill style={{ background: BG, opacity: exitOpacity }}>
 
-      {/* === Vignette === */}
-      <AbsoluteFill
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,0.85) 100%)",
-          opacity: vignetteOpacity,
-          pointerEvents: "none",
-        }}
-      />
+      {/* ============================================================ */}
+      {/* AUDIO CUES                                                   */}
+      {/* ============================================================ */}
 
-      {/* === Typing click SFX === */}
+      {/* Keyboard clicks */}
       {Array.from({ length: COMMAND.length }, (_, i) => {
         const fireAt = TYPE_START + Math.round(i * FRAMES_PER_CHAR);
         return (
-          <Sequence key={i} from={fireAt} durationInFrames={20}>
+          <Sequence key={i} from={fireAt} durationInFrames={15}>
             <Audio src={staticFile("sfx/keyboard-click.wav")} volume={0.2} />
           </Sequence>
         );
       })}
 
-      {/* === Terminal pill === */}
-      <AbsoluteFill
-        style={{
+      {/* Snap / impact whoosh */}
+      <Sequence from={SNAP_FRAME} durationInFrames={30}>
+        <Audio src={staticFile("sfx/whoosh.mp3")} volume={0.15} />
+      </Sequence>
+
+
+      {/* ============================================================ */}
+      {/* CENTER STAGE: THE WIREFRAME -> BLOG CARD COMPILE             */}
+      {/* ============================================================ */}
+
+      <AbsoluteFill style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{
+          width: CARD_W,
+          height: CARD_H,
+          // Brutalist dashed border initially, smooth subtle solid border on render
+          border: hasSnapped ? `2px solid rgba(255,255,255,0.07)` : `2px dashed ${DIM}`,
+          borderRadius: hasSnapped ? 16 : 6,
+          overflow: "hidden",
+          background: hasSnapped ? "#15151a" : "transparent",
+          transform: `scale(${scaleTransform})`,
+          opacity: cardOpacity,
+          boxShadow: hasSnapped
+            ? "0 32px 100px -20px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.03)"
+            : "none",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div style={{ transform: `translateY(${pillSlide}px)` }}>
-          <div
-            style={{
-              fontFamily: jetBrainsMono,
-              fontWeight: 400,
-              fontSize: PILL_FONT_SIZE,
-              color: FG,
-              background: "rgba(10,10,12,0.62)",
-              padding: "16px 36px",
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.06)",
-              letterSpacing: "0.02em",
-              whiteSpace: "nowrap",
-              minWidth: "32ch",
-              boxShadow:
-                "0 0 22px rgba(200,136,74,0.22), 0 0 2px rgba(200,136,74,0.4)",
-              backdropFilter: "blur(2px)",
-            }}
-          >
-            <span style={{ color: ACCENT }}>$ </span>
-            {typedHighlight ? (
-              <>
-                better-covers{" "}
-                <span style={{ color: "#7dd3fc" }}>
-                  {typed.slice("better-covers ".length)}
-                </span>
-              </>
-            ) : (
-              typed
+          flexDirection: "column",
+          transition: "border-radius 0.1s ease-out, background 0.1s ease-out"
+        }}>
+
+          {/* TOP: Image / Terminal Area */}
+          <div style={{
+            width: "100%",
+            height: CARD_IMG_H,
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            padding: 80,
+            background: hasSnapped ? "#0a0a0c" : "transparent",
+            borderBottom: hasSnapped ? `2px solid rgba(255,255,255,0.05)` : `2px dashed ${DIM}`,
+          }}>
+
+            {/* Terminal State (Pre-Snap) */}
+            {!hasSnapped && (
+              <div style={{
+                fontFamily: jetBrainsMono,
+                fontSize: 48,
+                color: FG,
+                display: "flex",
+                flexDirection: "column",
+                gap: 24
+              }}>
+                <div>
+                  <span style={{ color: ACCENT }}>{typedCmd.substring(0, 2)}</span>
+                  {typedCmd.substring(2)}
+                  {(isTyping || frame < LOG_1_FRAME) && <span style={{ opacity: showCaret ? 1 : 0 }}>█</span>}
+                </div>
+
+                {frame >= LOG_1_FRAME && (
+                  <div style={{
+                    color: DIM,
+                    fontSize: 32,
+                    opacity: log1Spring,
+                    transform: `translateY(${interpolate(log1Spring, [0, 1], [15, 0])}px)`
+                  }}>
+                    {`> resolving seed "hoarfrost"...`}
+                  </div>
+                )}
+
+                {frame >= LOG_2_FRAME && (
+                  <div style={{
+                    color: DIM,
+                    fontSize: 32,
+                    opacity: log2Spring,
+                    transform: `translateY(${interpolate(log2Spring, [0, 1], [15, 0])}px)`
+                  }}>
+                    {`> rendering deterministic art...`}
+                  </div>
+                )}
+              </div>
             )}
-            {(typingActive || frame < TYPE_END + 10) && (
-              <span style={{ opacity: showCaret ? 1 : 0 }}>█</span>
+
+            {/* Generated Cover State (Post-Snap) */}
+            {hasSnapped && (
+              <>
+                <Img
+                  src={staticFile("covers/showcase-hoarfrost.png")}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+                {/* Punchy satisfying flash on successful render */}
+                <AbsoluteFill style={{ background: "#ffffff", opacity: flashOpacity, pointerEvents: "none" }} />
+              </>
             )}
           </div>
+
+          {/* BOTTOM: Blog Post Text Area */}
+          <div style={{
+            padding: "40px 60px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            opacity: hasSnapped ? 1 : 0,
+          }}>
+            <div style={{
+              fontFamily: geist,
+              fontSize: 24,
+              color: DIM,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              opacity: postDomainSpring,
+              transform: `translateY(${interpolate(postDomainSpring, [0, 1], [10, 0])}px)`
+            }}>
+              yourblog.dev
+            </div>
+            <div style={{
+              fontFamily: sourceSerif4,
+              fontWeight: 600,
+              fontSize: 64,
+              color: FG,
+              letterSpacing: "-0.015em",
+              lineHeight: 1.1,
+              opacity: postTitleSpring,
+              transform: `translateY(${interpolate(postTitleSpring, [0, 1], [15, 0])}px)`
+            }}>
+              Hoarfrost in Distributed Systems
+            </div>
+          </div>
+
         </div>
       </AbsoluteFill>
     </AbsoluteFill>

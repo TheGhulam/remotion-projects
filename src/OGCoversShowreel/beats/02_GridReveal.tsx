@@ -1,40 +1,21 @@
 import React from "react";
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
-import { BG, ACCENT, BEATS, FG, DIM } from "../video-config";
+import { BG, ACCENT, FG } from "../video-config";
 import { COVERS, Cover } from "../lib/covers";
 import { sourceSerif4, jetBrainsMono } from "../fonts";
 
 /**
- * Beat 2 — Grid reveal (frames 0–165, 5.5s).
+ * Beat 2 — Grid reveal (frames 135–280, 4.8s).
  *
- * REWRITE NOTES
- * -------------
- * The previous version put the "every cover, uniquely generated" headline
- * inside a dark blurred rectangle FLOATING ON TOP OF the 16-cell grid, where
- * it occluded four covers including the lsystem-light and the schlieren.
- * The grid is the most viral-shaped frame in the entire video — it's the
- * one frame people will screenshot — and the previous version made it
- * unscreenshottable.
- *
- * Two structural fixes:
- *
- *   (1) Grid shrunk from 1600px wide to 1480px wide, opening 140px of
- *       breathing room above and below. The headline now sits CLEANLY
- *       BELOW the grid, not on top of it. No tile is covered.
- *
- *   (2) Headline arrival pushed from frame 70 to frame 95, giving the
- *       grid a full ~50 frames (1.6s) of clean hold AFTER the spring-in
- *       settles. That window is the screenshot window. Don't fill it.
- *
- * The headline is also smaller (48px not 64px) because it no longer needs
- * to compete with the grid for attention — it's serving as a caption to
- * the grid, not a bullhorn over it.
+ * Reduced from 165 frames to 145 frames to give the IntroClaims card
+ * more reading time without misaligning later beats. Typing speeds and
+ * exit intervals have been slightly condensed to compensate.
  */
 
 const TEXT = "every cover, uniquely generated";
-const TYPE_START = 95;
-const FRAMES_PER_CHAR = 1.8;
-const TYPE_END = TYPE_START + TEXT.length * FRAMES_PER_CHAR; // ~150
+const TYPE_START = 80;
+const FRAMES_PER_CHAR = 1.6;
+const TYPE_END = TYPE_START + TEXT.length * FRAMES_PER_CHAR; // ~130
 
 function getTypedText(frame: number): string {
   const chars = Math.min(TEXT.length, Math.max(0, Math.floor((frame - TYPE_START) / FRAMES_PER_CHAR)));
@@ -55,8 +36,6 @@ const CELL_W = (GRID_WIDTH - GAP * (COLS - 1)) / COLS;
 const CELL_H = CELL_W / CELL_ASPECT;
 const GRID_HEIGHT = ROWS * CELL_H + GAP * (ROWS - 1);
 
-// Push the grid up so the headline has room beneath it. Grid centered
-// around y=470 instead of y=540, giving ~200px below.
 const GRID_TOP_OFFSET = -70;
 
 const TOPO_LIGHT: Cover = {
@@ -70,8 +49,8 @@ const GRID_ITEMS = [
   TOPO_LIGHT,
 ];
 
-const EXIT_START = 155;
-const EXIT_END = 165;
+const EXIT_START = 135;
+const EXIT_END = 145;
 
 export const GridReveal: React.FC = () => {
   const frame = useCurrentFrame();
@@ -93,17 +72,6 @@ export const GridReveal: React.FC = () => {
     extrapolateRight: "clamp",
   });
   const textOpacity = textFadeIn * exitOpacity;
-
-  const underlineProgress = interpolate(
-    frame,
-    [TYPE_END, TYPE_END + 12],
-    [0, 1],
-    {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-      easing: Easing.out(Easing.cubic),
-    },
-  );
 
   return (
     <AbsoluteFill style={{ background: BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -180,9 +148,6 @@ export const GridReveal: React.FC = () => {
         })}
       </div>
 
-      {/* Headline — sits BELOW the grid, anchored to the bottom of the canvas.
-          Arrives at frame 95, well after the grid has settled. No backdrop,
-          no occlusion. */}
       <div
         style={{
           position: "absolute",
@@ -217,17 +182,6 @@ export const GridReveal: React.FC = () => {
               <span style={{ color: ACCENT, marginLeft: 4 }}>|</span>
             )}
           </div>
-          {/* <div
-            style={{
-              position: "absolute",
-              left: 0,
-              bottom: -8,
-              height: 2,
-              width: `${underlineProgress * 100}%`,
-              background: ACCENT,
-              opacity: 0.9,
-            }}
-          /> */}
         </div>
       </div>
 

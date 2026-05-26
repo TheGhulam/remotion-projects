@@ -26,14 +26,14 @@ export const RAPID_FIRE_DURATION = rapidFireDuration(RAPID_FIRE_COVERS.length);
 // Beat frame ranges — cut times derived from public/music/yep-by-fgb-beats.json
 // Regenerate: python scripts/extract_beats.py
 export const BEATS = {
-  introClaims:        { from: 0,    to: 105  }, // 3.5s — terminal hook
-  gridReveal:         { from: 105,  to: 270  }, // 5.5s — grid + headline
-  heroHoarfrost:      { from: 270,  to: 405  }, // 4.5s
-  heroClifford:       { from: 405,  to: 525  }, // 4.0s
-  stipplingTransition:{ from: 525,  to: 615  }, // 3.0s
-  heroFidenza:        { from: 615,  to: RAPID_FIRE_START },
-  rapidFire:          { from: RAPID_FIRE_START, to: RAPID_FIRE_START + RAPID_FIRE_DURATION },
-  endCard:            { from: RAPID_FIRE_START + RAPID_FIRE_DURATION, to: TOTAL_FRAMES },
+  introClaims: { from: 0, to: 135 }, // 4.5s (was 105) — extended for readability
+  gridReveal: { from: 135, to: 280 }, // 4.8s (was 105->270)
+  heroHoarfrost: { from: 280, to: 405 }, // 4.1s (was 270->405)
+  heroClifford: { from: 405, to: 525 }, // 4.0s (starts at 405 to preserve music drop)
+  stipplingTransition: { from: 525, to: 615 }, // 3.0s
+  heroFidenza: { from: 615, to: RAPID_FIRE_START },
+  rapidFire: { from: RAPID_FIRE_START, to: RAPID_FIRE_START + RAPID_FIRE_DURATION },
+  endCard: { from: RAPID_FIRE_START + RAPID_FIRE_DURATION, to: TOTAL_FRAMES },
 } as const;
 
 export const ACCENT = "#c8884a";
