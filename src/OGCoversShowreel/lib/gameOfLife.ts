@@ -37,13 +37,11 @@ function mulberry32(a: number): () => number {
 
 /** Slug passed to hashStr — matches better-covers PhenomenaCoversConsolidated seed field. */
 export const LIFE_SEED_SLUG = "life-conway";
-export const LIFE_RULESET = "B3/S23";
 
 /** Caption lines derived from the same constants that drive the simulation. */
-export function lifeReproCaption(): { seed: string; params: string } {
+export function lifeReproCaption(): { seed: string } {
   return {
     seed: LIFE_SEED_SLUG,
-    params: `gen ${LIFE_GENERATIONS} · density ${LIFE_INITIAL_DENSITY} · ${LIFE_RULESET} · wrap · ${CELL}px`,
   };
 }
 

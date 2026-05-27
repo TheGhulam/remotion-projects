@@ -50,9 +50,6 @@ def make_post_request(url, payload, headers):
 
 
 def generate_tts(text, output_path, voice_id):
-    # Prefix text with a silent punctuation to give the synthesis engine
-    # a tiny pre-roll buffer, completely avoiding clipping the first letter!
-    padded_text = "... " + text
     print(f"Generating Natural TTS Voiceover -> '{text}'...")
     url = f"{API_BASE_URL}/text-to-speech/{voice_id}"
     headers = {
@@ -61,7 +58,7 @@ def generate_tts(text, output_path, voice_id):
         "Accept": "audio/mpeg"
     }
     payload = {
-        "text": padded_text,
+        "text": text,
         "model_id": "eleven_multilingual_v2",
         "voice_settings": {
             "stability": 0.42,
@@ -138,19 +135,19 @@ def main():
     # Define the 4 high-impact voiceover segments
     voiceovers = [
         (
-            "You spent three days writing a blog masterpiece, only to share it with a generic blue gradient or a blurry screenshot. The internet is too crowded for boring previews. So better-covers compiles something different: not AI, but pure deterministic math.",
+            "Your links need a better preview. Better Covers adds stunning, one-of-a-kind cover art to your links.",
             VOICEOVER_DIR / "01_intro.mp3"
         ),
         (
-            "Just drop in a seed string to compile actual generative art: hoarfrost, strange attractors, and flow fields. Every cover is unique, but renders exactly the same, every single time.",
+            "Every image is based off a unique seed derived from your URL",
             VOICEOVER_DIR / "02_grid.mp3"
         ),
         (
-            "It's a beautiful, complex visual fingerprint of your ideas, running right in your terminal. No design skills needed, just repeatable art.",
+            "It's a beautiful fingerprint of your ideas, running locally with no API calls.",
             VOICEOVER_DIR / "03_heroes.mp3"
         ),
         (
-            "Your blog deserves better than a template. Stop settling and start compiling. Just run npm install better-covers.",
+            "Your blog deserves better than a generic preview. Just run npm install better-covers.",
             VOICEOVER_DIR / "04_endcard.mp3"
         )
     ]

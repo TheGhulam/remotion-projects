@@ -45,28 +45,17 @@ export const OGCoversShowreel: React.FC = () => {
       <Audio
         src={staticFile("music/yep-by-fgb.mp3")}
         volume={(f) => {
-          // Dynamic music ducking during ElevenLabs AI female voiceovers (Rachel)
-          const duckVO1 = interpolate(f, [10, 20, 587, 597], [1, 0.35, 0.35, 1], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          });
-          const duckVO2 = interpolate(f, [585, 595, 950, 960], [1, 0.35, 0.35, 1], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          });
-          const duckVO3 = interpolate(f, [1040, 1050, 1387, 1397], [1, 0.35, 0.35, 1], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          });
-          const duckVO4 = interpolate(f, [1450, 1460, 1677, 1687], [1, 0.35, 0.35, 1], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          });
-          const fadeOut = interpolate(f, [1770, 1800], [1, 0], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          });
-          return duckVO1 * duckVO2 * duckVO3 * duckVO4 * fadeOut;
+          // A single, continuous volume curve to ensure a smooth, gradual fade-up
+          // and prevent jarring beat-spikes or volume pumping during narrations.
+          return interpolate(
+            f,
+            [0, 200, 650, 700, 1430, 1460, 1610, 1660],
+            [0, 0.20, 0.20, 0.85, 0.85, 0.20, 0.20, 0.0],
+            {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            }
+          );
         }}
       />
 
@@ -75,15 +64,15 @@ export const OGCoversShowreel: React.FC = () => {
         <Audio src={staticFile("voiceovers/01_intro.mp3")} volume={1.0} />
       </Sequence>
 
-      <Sequence from={595}>
+      <Sequence from={320}>
         <Audio src={staticFile("voiceovers/02_grid.mp3")} volume={1.0} />
       </Sequence>
 
-      <Sequence from={1050}>
+      <Sequence from={500}>
         <Audio src={staticFile("voiceovers/03_heroes.mp3")} volume={1.0} />
       </Sequence>
 
-      <Sequence from={1460}>
+      <Sequence from={1450}>
         <Audio src={staticFile("voiceovers/04_endcard.mp3")} volume={1.0} />
       </Sequence>
 

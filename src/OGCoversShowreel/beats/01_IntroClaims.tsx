@@ -79,8 +79,8 @@ export const IntroClaims: React.FC = () => {
   const scaleTransform = hasSnapped ? interpolate(cardScaleSnap, [0, 1], [0.95, 1]) : baseScale;
   const cardOpacity = interpolate(entranceScale, [0, 0.5], [0, 1]);
 
-  // Exit fade at the end of the 240-frame sequence
-  const exitOpacity = interpolate(frame, [225, 240], [1, 0], {
+  // Exit fade at the end of the 300-frame sequence
+  const exitOpacity = interpolate(frame, [285, 300], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -163,7 +163,7 @@ export const IntroClaims: React.FC = () => {
             {hasSnapped && (
               <>
                 <Img
-                  src={staticFile("covers/showcase-hoarfrost.png")}
+                  src={staticFile("covers/showcase-karman.png")}
                   style={{
                     position: "absolute",
                     inset: 0,
@@ -212,7 +212,7 @@ export const IntroClaims: React.FC = () => {
               opacity: hasSnapped ? postTitleSpring : 0.9,
               transform: hasSnapped ? `translateY(${interpolate(postTitleSpring, [0, 1], [15, 0])}px)` : "none"
             }}>
-              Hoarfrost in Distributed Systems
+              Kármán Vortex Streets
             </div>
           </div>
 
