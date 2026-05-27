@@ -82,7 +82,6 @@ export const HeroKarman: React.FC = () => {
         title="Game of Life"
         subtitle="Conway, 1970"
         seed={repro.seed}
-        params={repro.params}
         theme="dark"
         anchor="bottom-left"
         opacity={captionOpacity * exitOpacity}

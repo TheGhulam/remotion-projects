@@ -16,6 +16,7 @@
     "render:twg:tools": "remotion render src/index.ts TWG-ToolVariability out/twg-tool-variability.mp4",
     "render:twg:pertraj": "remotion render src/index.ts TWG-GlobalVsPerTraj out/twg-global-vs-pertraj.mp4",
     "render:og-covers": "remotion render src/index.ts OGCoversShowreel out/og-covers-showreel.mp4 --codec h264 --crf 18",
+    "render:og-covers:captions": "remotion render src/index.ts OGCoversShowreel out/og-covers-showreel-captions.mp4 --props=src/OGCoversShowreel/props-captions.json --codec h264 --crf 18",
     "render:pg:cascade": "remotion render src/index.ts PowerGraph-Cascade out/pg-cascade.mp4",
     "render:pg:onnx": "remotion render src/index.ts PowerGraph-ONNX out/pg-onnx.mp4",
     "render:pg:adversarial": "remotion render src/index.ts PowerGraph-Adversarial out/pg-adversarial.mp4",

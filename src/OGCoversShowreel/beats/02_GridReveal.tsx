@@ -13,7 +13,7 @@ const GAP = 16;
 const CELL_W = (GRID_WIDTH - GAP * (COLS - 1)) / COLS;
 const CELL_H = CELL_W / CELL_ASPECT;
 const GRID_HEIGHT = ROWS * CELL_H + GAP * (ROWS - 1);
-const GRID_TOP_OFFSET = 0;
+const GRID_TOP_OFFSET = -32;
 
 const TOPO_LIGHT: Cover = {
   ...COVERS[12],

@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Audio, interpolate, Sequence, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Audio, interpolate, Sequence, staticFile, useCurrentFrame, getInputProps } from "remotion";
 import { BEATS, TOTAL_FRAMES } from "./video-config";
 // Load fonts at module init so they're ready before any frame renders
 import "./fonts";
@@ -12,6 +12,8 @@ import { HeroFidenza } from "./beats/05_HeroFidenza";
 import { HarmonographTransition } from "./beats/06_StipplingTransition";
 import { RapidFire } from "./beats/07_RapidFire";
 import { EndCard } from "./beats/08_EndCard";
+import { Captions } from "./components/Captions";
+
 
 const GrainOverlay: React.FC = () => {
   const frame = useCurrentFrame();
@@ -32,6 +34,8 @@ const GrainOverlay: React.FC = () => {
 };
 
 export const OGCoversShowreel: React.FC = () => {
+  const { showCaptions = false } = getInputProps() as { showCaptions?: boolean };
+
   return (
     <AbsoluteFill style={{ background: "#0a0a0c" }}>
       {/* Music — spans full 36s, fades out over last 30 frames.
@@ -125,8 +129,12 @@ export const OGCoversShowreel: React.FC = () => {
         <Letterbox duration={BEATS.heroClifford.to - BEATS.heroHoarfrost.from} />
       </Sequence>
 
+      {/* Code-comment style syntax-highlighted subtitles synced to narration */}
+      {showCaptions && <Captions />}
+
       {/* Film grain — tiling 200×200 SVG noise, seed cycles per frame */}
       <GrainOverlay />
     </AbsoluteFill>
   );
 };
+
