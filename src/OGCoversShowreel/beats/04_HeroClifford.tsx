@@ -10,7 +10,7 @@ const SEEDS = [
   { slug: "yep-by-fgb",  png: staticFile("covers/showcase-clifford-yep-by-fgb.png") },
 ];
 
-const PHASE_DURATION = 40;
+const PHASE_DURATION = 60;
 const ENTER_FRAMES = 20;
 const EXIT_FRAMES = 6;
 

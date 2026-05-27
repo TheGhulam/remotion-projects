@@ -22,8 +22,8 @@ FPS = 30
 
 # Composition sync targets (seconds) — matched to nearest detected beat.
 MARKER_TARGETS = {
-    "drop": 16.6,
-    "rapidFire": 23.1,
+    "drop": 25.0,
+    "rapidFire": 35.0,
 }
 
 

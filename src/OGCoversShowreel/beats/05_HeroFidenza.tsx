@@ -4,7 +4,7 @@ import { BG } from "../video-config";
 import { CaptionBlock } from "../lib/CaptionBlock";
 
 const PNG = staticFile("covers/showcase-flow.png");
-const DURATION = 80;
+const DURATION = 90;
 
 /**
  * Beat 6 — Hero Fidenza (flow field).
@@ -45,7 +45,7 @@ export const HeroFidenza: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
-  const exitOpacity = interpolate(frame, [68, 80], [1, 0], {
+  const exitOpacity = interpolate(frame, [78, 90], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });

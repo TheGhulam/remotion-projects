@@ -72,13 +72,18 @@ export const EndCard: React.FC = () => {
   const tooltipStart = TYPE_START + INSTALL_CMD.length * FPC + 15;
   const tooltipSpring = spring({ frame: frame - tooltipStart, fps, config: { damping: 12, stiffness: 140 } });
 
-  const endOpacity = interpolate(frame, [115, 128], [1, 0.94], {
+  const endOpacity = interpolate(frame, [335, 350], [1, 0.94], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   return (
     <AbsoluteFill style={{ background: BG, opacity: endOpacity }}>
+      {/* Elegant ElevenLabs chime / ding on end card reveal */}
+      <Sequence from={0} durationInFrames={60}>
+        <Audio src={staticFile("sfx/chime.mp3")} volume={0.2} />
+      </Sequence>
+
       {/* Keyboard clicks for the command */}
       {Array.from({ length: INSTALL_CMD.length }, (_, i) => (
         <Sequence key={i} from={TYPE_START + Math.round(i * FPC)} durationInFrames={15}>

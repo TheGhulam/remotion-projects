@@ -36,8 +36,8 @@ const TOPO_LIGHT: Cover = {
 
 const GRID_ITEMS = [...COVERS, TOPO_LIGHT];
 
-const EXIT_START = 135;
-const EXIT_END = 145;
+const EXIT_START = 230;
+const EXIT_END = 240;
 
 export const GridReveal: React.FC = () => {
   const frame = useCurrentFrame();

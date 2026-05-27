@@ -7,8 +7,8 @@ import { CaptionBlock } from "../lib/CaptionBlock";
 const DARK_PNG = staticFile("covers/showcase-harmonograph.png");
 const LIGHT_PNG = staticFile("covers/showcase-harmonograph-light.png");
 
-const DROP_START = 30;
-const DROP_DURATION = 36;
+const DROP_START = 40;
+const DROP_DURATION = 50;
 
 export const HarmonographTransition: React.FC = () => {
   const frame = useCurrentFrame();
@@ -23,7 +23,7 @@ export const HarmonographTransition: React.FC = () => {
   // Caption on dark bg — fades out before the circle fully arrives
   const darkCaptionOpacity = interpolate(
     frame,
-    [0, 8, 26, 36],
+    [0, 8, 36, 46],
     [0, 1, 1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
@@ -31,7 +31,7 @@ export const HarmonographTransition: React.FC = () => {
   // Caption on light bg — fades in as circle starts, persists to end
   const lightCaptionOpacity = interpolate(
     frame,
-    [28, 38, 82, 90],
+    [38, 48, 110, 120],
     [0, 1, 1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
@@ -39,7 +39,7 @@ export const HarmonographTransition: React.FC = () => {
   // "Dark mode" callout — visible before the drop, fades out as circle starts
   const darkCalloutOpacity = interpolate(
     frame,
-    [0, 8, 26, 36],
+    [0, 8, 36, 46],
     [0, 1, 1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
@@ -47,7 +47,7 @@ export const HarmonographTransition: React.FC = () => {
   // "Light mode" callout — fades in right as the circle begins
   const lightCalloutOpacity = interpolate(
     frame,
-    [28, 38, 62, 70],
+    [38, 48, 92, 100],
     [0, 1, 1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );

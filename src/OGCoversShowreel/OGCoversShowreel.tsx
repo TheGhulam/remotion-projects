@@ -45,17 +45,47 @@ export const OGCoversShowreel: React.FC = () => {
       <Audio
         src={staticFile("music/yep-by-fgb.mp3")}
         volume={(f) => {
-          const duck = interpolate(f, [545, 555, 575, 588], [1, 0.4, 0.4, 1], {
+          // Dynamic music ducking during ElevenLabs AI female voiceovers (Rachel)
+          const duckVO1 = interpolate(f, [10, 20, 587, 597], [1, 0.35, 0.35, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           });
-          const fadeOut = interpolate(f, [1050, 1080], [1, 0], {
+          const duckVO2 = interpolate(f, [585, 595, 950, 960], [1, 0.35, 0.35, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           });
-          return duck * fadeOut;
+          const duckVO3 = interpolate(f, [1040, 1050, 1387, 1397], [1, 0.35, 0.35, 1], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          });
+          const duckVO4 = interpolate(f, [1450, 1460, 1677, 1687], [1, 0.35, 0.35, 1], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          });
+          const fadeOut = interpolate(f, [1770, 1800], [1, 0], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          });
+          return duckVO1 * duckVO2 * duckVO3 * duckVO4 * fadeOut;
         }}
       />
+
+      {/* ElevenLabs AI Voiceovers (Natural Female Voice: Rachel) */}
+      <Sequence from={20}>
+        <Audio src={staticFile("voiceovers/01_intro.mp3")} volume={1.0} />
+      </Sequence>
+
+      <Sequence from={595}>
+        <Audio src={staticFile("voiceovers/02_grid.mp3")} volume={1.0} />
+      </Sequence>
+
+      <Sequence from={1050}>
+        <Audio src={staticFile("voiceovers/03_heroes.mp3")} volume={1.0} />
+      </Sequence>
+
+      <Sequence from={1460}>
+        <Audio src={staticFile("voiceovers/04_endcard.mp3")} volume={1.0} />
+      </Sequence>
 
       {/* Beat 1 — Intro hook: 0–105 (3.5s) */}
       <Sequence from={BEATS.introClaims.from} durationInFrames={BEATS.introClaims.to - BEATS.introClaims.from} premountFor={30}>

@@ -27,28 +27,11 @@ import { jetBrainsMono, sourceSerif4, geist } from "../fonts";
  * easy to read on a fast-scrolling mobile timeline.
  */
 
-const TYPE_START = 8;
-const COMMAND = `$ npx better-covers generate`;
-const FRAMES_PER_CHAR = 1.1; // Sped up from 1.4
-
-// Timings for the "terminal logs" popping in before the final render snap
-const LOG_1_FRAME = 40; // was 48
-const LOG_2_FRAME = 46; // was 55
-const SNAP_FRAME = 55;  // was 65
-
-function typedSlice(frame: number, text: string, startFrame: number, fpc: number): string {
-  if (frame < startFrame) return "";
-  const n = Math.min(text.length, Math.floor((frame - startFrame) / fpc));
-  return text.slice(0, n);
-}
+const SNAP_FRAME = 130;  // Compiled snap happens at 4.33 seconds
 
 export const IntroClaims: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-
-  const typedCmd = typedSlice(frame, COMMAND, TYPE_START, FRAMES_PER_CHAR);
-  const isTyping = frame >= TYPE_START && typedCmd.length < COMMAND.length;
-  const showCaret = Math.floor(frame / 10) % 2 === 0;
 
   const hasSnapped = frame >= SNAP_FRAME;
 
@@ -60,33 +43,21 @@ export const IntroClaims: React.FC = () => {
 
   // Animations & Micro-interactions
 
-  // 1. Initial entrance of the wireframe
+  // 1. Initial entrance of the card
   const entranceScale = spring({
     frame,
     fps,
     config: { damping: 16, stiffness: 100 },
   });
 
-  // 2. Terminal logs slide-up springs
-  const log1Spring = spring({
-    frame: frame - LOG_1_FRAME,
-    fps,
-    config: { damping: 14, stiffness: 120 },
-  });
-  const log2Spring = spring({
-    frame: frame - LOG_2_FRAME,
-    fps,
-    config: { damping: 14, stiffness: 120 },
-  });
-
-  // 3. Impact spring when the cover generation finishes
+  // 2. Impact spring when the cover generation finishes
   const cardScaleSnap = spring({
     frame: frame - SNAP_FRAME,
     fps,
     config: { damping: 14, stiffness: 140 },
   });
 
-  // 4. Staggered text reveal for the final blog details
+  // 3. Staggered text reveal for the final blog details
   const postDomainSpring = spring({
     frame: frame - SNAP_FRAME,
     fps,
@@ -98,7 +69,7 @@ export const IntroClaims: React.FC = () => {
     config: { damping: 14, stiffness: 110 },
   });
 
-  // 5. Flash effect at snap
+  // 4. Flash effect at snap
   const flashOpacity = hasSnapped
     ? interpolate(frame - SNAP_FRAME, [0, 10], [0.6, 0], { extrapolateRight: "clamp" })
     : 0;
@@ -108,9 +79,8 @@ export const IntroClaims: React.FC = () => {
   const scaleTransform = hasSnapped ? interpolate(cardScaleSnap, [0, 1], [0.95, 1]) : baseScale;
   const cardOpacity = interpolate(entranceScale, [0, 0.5], [0, 1]);
 
-  // Exit fade for the transition into Beat 2 (Grid Reveal)
-  // Adjusted for extended sequence duration
-  const exitOpacity = interpolate(frame, [125, 135], [1, 0], {
+  // Exit fade at the end of the 240-frame sequence
+  const exitOpacity = interpolate(frame, [225, 240], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -121,16 +91,6 @@ export const IntroClaims: React.FC = () => {
       {/* ============================================================ */}
       {/* AUDIO CUES                                                   */}
       {/* ============================================================ */}
-
-      {/* Keyboard clicks */}
-      {Array.from({ length: COMMAND.length }, (_, i) => {
-        const fireAt = TYPE_START + Math.round(i * FRAMES_PER_CHAR);
-        return (
-          <Sequence key={i} from={fireAt} durationInFrames={15}>
-            <Audio src={staticFile("sfx/keyboard-click.wav")} volume={0.2} />
-          </Sequence>
-        );
-      })}
 
       {/* Snap / impact whoosh */}
       <Sequence from={SNAP_FRAME} durationInFrames={30}>
@@ -150,7 +110,7 @@ export const IntroClaims: React.FC = () => {
           border: hasSnapped ? `2px solid rgba(255,255,255,0.07)` : `2px dashed ${DIM}`,
           borderRadius: hasSnapped ? 16 : 6,
           overflow: "hidden",
-          background: hasSnapped ? "#15151a" : "transparent",
+          background: "#15151a",
           transform: `scale(${scaleTransform})`,
           opacity: cardOpacity,
           boxShadow: hasSnapped
@@ -161,7 +121,7 @@ export const IntroClaims: React.FC = () => {
           transition: "border-radius 0.1s ease-out, background 0.1s ease-out"
         }}>
 
-          {/* TOP: Image / Terminal Area */}
+          {/* TOP: Image / Cover Area */}
           <div style={{
             width: "100%",
             height: CARD_IMG_H,
@@ -170,47 +130,32 @@ export const IntroClaims: React.FC = () => {
             flexDirection: "column",
             justifyContent: "center",
             padding: 80,
-            background: hasSnapped ? "#0a0a0c" : "transparent",
+            background: hasSnapped ? "#0a0a0c" : "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)",
             borderBottom: hasSnapped ? `2px solid rgba(255,255,255,0.05)` : `2px dashed ${DIM}`,
+            transition: "background 0.1s"
           }}>
 
-            {/* Terminal State (Pre-Snap) */}
+            {/* Boring State (Pre-Snap): Default Blue Gradient with Blurry Outline / IMAGE label */}
             {!hasSnapped && (
               <div style={{
-                fontFamily: jetBrainsMono,
-                fontSize: 48,
-                color: FG,
+                width: 320,
+                height: 180,
+                border: "4px solid rgba(255,255,255,0.18)",
+                borderRadius: 8,
+                margin: "0 auto",
                 display: "flex",
                 flexDirection: "column",
-                gap: 24
+                alignItems: "center",
+                justifyContent: "center",
+                color: "rgba(255,255,255,0.24)",
+                fontFamily: "system-ui, -apple-system, sans-serif",
+                fontSize: 28,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                boxShadow: "inset 0 0 20px rgba(255,255,255,0.05)"
               }}>
-                <div>
-                  <span style={{ color: ACCENT }}>{typedCmd.substring(0, 2)}</span>
-                  {typedCmd.substring(2)}
-                  {(isTyping || frame < LOG_1_FRAME) && <span style={{ opacity: showCaret ? 1 : 0 }}>█</span>}
-                </div>
-
-                {frame >= LOG_1_FRAME && (
-                  <div style={{
-                    color: DIM,
-                    fontSize: 32,
-                    opacity: log1Spring,
-                    transform: `translateY(${interpolate(log1Spring, [0, 1], [15, 0])}px)`
-                  }}>
-                    {`> resolving seed "hoarfrost"...`}
-                  </div>
-                )}
-
-                {frame >= LOG_2_FRAME && (
-                  <div style={{
-                    color: DIM,
-                    fontSize: 32,
-                    opacity: log2Spring,
-                    transform: `translateY(${interpolate(log2Spring, [0, 1], [15, 0])}px)`
-                  }}>
-                    {`> rendering deterministic art...`}
-                  </div>
-                )}
+                <span>Placeholder</span>
               </div>
             )}
 
@@ -240,28 +185,32 @@ export const IntroClaims: React.FC = () => {
             display: "flex",
             flexDirection: "column",
             gap: 16,
-            opacity: hasSnapped ? 1 : 0,
+            background: hasSnapped ? "transparent" : "#1e293b",
+            flex: 1,
+            justifyContent: "center",
+            transition: "background 0.1s"
           }}>
             <div style={{
-              fontFamily: geist,
+              fontFamily: hasSnapped ? geist : "system-ui, -apple-system, sans-serif",
               fontSize: 24,
-              color: DIM,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              opacity: postDomainSpring,
-              transform: `translateY(${interpolate(postDomainSpring, [0, 1], [10, 0])}px)`
+              color: hasSnapped ? DIM : "rgba(255,255,255,0.4)",
+              letterSpacing: hasSnapped ? "0.08em" : "normal",
+              textTransform: hasSnapped ? "uppercase" : "none",
+              opacity: hasSnapped ? postDomainSpring : 0.7,
+              transform: hasSnapped ? `translateY(${interpolate(postDomainSpring, [0, 1], [10, 0])}px)` : "none",
+              fontWeight: hasSnapped ? "normal" : 500
             }}>
               yourblog.dev
             </div>
             <div style={{
-              fontFamily: sourceSerif4,
-              fontWeight: 600,
+              fontFamily: hasSnapped ? sourceSerif4 : "system-ui, -apple-system, sans-serif",
+              fontWeight: hasSnapped ? 600 : 700,
               fontSize: 64,
               color: FG,
-              letterSpacing: "-0.015em",
+              letterSpacing: hasSnapped ? "-0.015em" : "normal",
               lineHeight: 1.1,
-              opacity: postTitleSpring,
-              transform: `translateY(${interpolate(postTitleSpring, [0, 1], [15, 0])}px)`
+              opacity: hasSnapped ? postTitleSpring : 0.9,
+              transform: hasSnapped ? `translateY(${interpolate(postTitleSpring, [0, 1], [15, 0])}px)` : "none"
             }}>
               Hoarfrost in Distributed Systems
             </div>
